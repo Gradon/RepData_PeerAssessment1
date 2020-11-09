@@ -17,45 +17,56 @@ The variables included in this dataset are:
     measurement was taken
 
 ## Loading and preprocessing the data
-```{r}
+
+```r
 activitydata <- read.csv("./activity.csv", header = TRUE, stringsAsFactors = TRUE)
 ```
 
 ## What is mean total number of steps taken per day?
-```{r}
+
+```r
 stepsperday <- tapply(activitydata$steps, activitydata$date, sum, na.rm = TRUE)
 hist(stepsperday, xlab = "Steps per Day", ylab = "Days", main = "Steps Taken per Day", breaks = 25)
 abline(v = mean(stepsperday), col = "blue", lwd = 3)
 text(x = mean(stepsperday), y = 10, labels = "mean", pos = 2)
 ```
 
-The mean number of steps per day (assuming NAs removed) is `r as.integer(mean(stepsperday))`.
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
 
-The median number of steps per day (assuming NAs removed) is `r as.integer(median(stepsperday))`.
+The mean number of steps per day (assuming NAs removed) is 9354.
+
+The median number of steps per day (assuming NAs removed) is 10395.
 
 ## What is the average daily activity pattern?
-```{r}
+
+```r
 # this calculation assumes removed NAs
 stepsperinterval <- tapply(activitydata$steps, activitydata$interval, mean, na.rm=TRUE)
 plot(unique(activitydata$interval), stepsperinterval, type = "l", xlab = "Time Interval", ylab = "Steps", main = "Average Daily Activity Pattern")
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+```r
 # interval with highest average number of steps
 maxinterval <- stepsperinterval[which.max(stepsperinterval)]
 ```
 
-The interval with the maximum average number of steps is interval `r names(maxinterval)` with `r as.integer(max(stepsperinterval))` steps.
+The interval with the maximum average number of steps is interval 835 with 206 steps.
 
 ## Imputing missing values
-```{r} 
+
+```r
 navector <- sapply(activitydata$steps, is.na)
 countna <- sum(navector)
 ```
 
-There are `r countna` entries with missing data (NA).
+There are 2304 entries with missing data (NA).
 
 Missing (NA) values will be replaced with the mean number of steps for that interval on other days.
 
-```{r}
+
+```r
 # create a vector with the average number of steps per interval in each NA location (else 0)
 replacesteps <- navector * rep(stepsperinterval, length(navector)/length(stepsperinterval))
 # create new data frame and replace NA with 0
@@ -66,19 +77,23 @@ newdata$steps <- newdata$steps + replacesteps
 ```
 
 ## What is mean total number of steps taken per day with NA's replaced?
-```{r}
+
+```r
 newstepsperday <- tapply(newdata$steps, newdata$date, sum)
 hist(newstepsperday, xlab = "Steps", ylab = "Days", main = "Steps Taken per Day", breaks = 25)
 abline(v = mean(newstepsperday), col = "blue", lwd = 3)
 text(x = mean(newstepsperday), y = 18, labels = "mean", pos = 4)
 ```
 
-The mean number of steps per day (replacing NAs with mean steps per interval) is `r as.integer(mean(newstepsperday))`.
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
 
-The median number of steps per day (replacing NAs with mean steps per interval) is `r as.integer(median(newstepsperday))`. Note that median is same as mean because there are enough NA days that replacing the NAs with mean steps per interval puts the median at the mean.
+The mean number of steps per day (replacing NAs with mean steps per interval) is 10766.
+
+The median number of steps per day (replacing NAs with mean steps per interval) is 10766. Note that median is same as mean because there are enough NA days that replacing the NAs with mean steps per interval puts the median at the mean.
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r}
+
+```r
 newdata$weekends <- as.factor(grepl("Sat|Sun", weekdays(as.Date(newdata$date))))
 levels(newdata$weekends)[1] <- "weekday"
 levels(newdata$weekends)[2] <- "weekend"
@@ -88,3 +103,5 @@ par(mfrow=c(2,1))
 plot(unique(newdata$interval), WDintervalsteps, type = "l", xlab = "Time Interval", ylab = "Steps", main = "Average Daily Activity Pattern - Weekday")
 plot(unique(newdata$interval), WEintervalsteps, type = "l", xlab = "Time Interval", ylab = "Steps", main = "Average Daily Activity Pattern - Weekend")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
